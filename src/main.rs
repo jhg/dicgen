@@ -1,9 +1,8 @@
 use dicgen::DictionaryGenerator;
 
 use clap::Parser;
-use indicatif::ProgressIterator;
 use std::path::PathBuf;
-use std::io::{Write, BufWriter};
+use std::io::{Write, BufWriter, Read};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -24,16 +23,19 @@ struct Opts {
 fn main() {
     let opts = Opts::parse();
 
+    let mut buf: Vec<u8> = Vec::with_capacity(opts.end.len() + 1);
+    buf.resize(opts.end.len() + 1, 0);
+
+    let mut generator = if let Some(init) = opts.init {
+        DictionaryGenerator::new(opts.alphabet, init, opts.end)
+    } else {
+        DictionaryGenerator::new_from_start(opts.alphabet, opts.end)
+    };
+
     let mut output: BufWriter<Box<dyn Write>> = if let Some(Ok(file)) = opts.file.as_ref().map(std::fs::File::create) {
         BufWriter::new(Box::new(file))
     } else {
         BufWriter::new(Box::new(std::io::stdout().lock()))
-    };
-
-    let generator = if let Some(init) = opts.init {
-        DictionaryGenerator::new(opts.alphabet, init, opts.end)
-    } else {
-        DictionaryGenerator::new_from_start(opts.alphabet, opts.end)
     };
 
     let progress = if opts.file.is_none() || opts.without_progress_bar {
@@ -49,10 +51,14 @@ fn main() {
         .with_finish(indicatif::ProgressFinish::AndLeave)
     };
 
-    for value in generator.progress_with(progress) {
-        output.write_all(value.as_bytes()).unwrap();
-        output.write_all("\n".as_bytes()).unwrap();
+    while let Ok(bytes_read) = generator.read(&mut buf) {
+        if bytes_read == 0 {
+            break;
+        }
+        output.write_all(&buf[..bytes_read]).unwrap();
+        progress.inc(1);
     }
 
+    progress.finish();
     output.flush().unwrap();
 }

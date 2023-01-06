@@ -1,6 +1,6 @@
 #![deny(clippy::perf)]
 
-use std::collections::BTreeSet;
+use std::{collections::BTreeSet, io::Read};
 
 pub struct DictionaryGenerator {
     alphabet: Vec<char>,
@@ -122,5 +122,31 @@ impl Iterator for DictionaryGenerator {
         };
 
         (min_possible_values, Some(max_possible_values))
+    }
+}
+
+impl Read for DictionaryGenerator {
+    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+        let Some(current_chars) = self.current_value.as_ref() else {
+            return Ok(0);
+        };
+
+        let endline_len = '\n'.len_utf8();
+        if buf.len() < current_chars.iter().map(|char| char.len_utf8()).sum::<usize>() + endline_len {
+            return Err(std::io::Error::new(std::io::ErrorKind::Other, "Buffer is too small"));
+        }
+
+        let mut wrote_bytes = 0;
+        for char in current_chars.iter().rev() {
+            char.encode_utf8(&mut buf[wrote_bytes..]);
+            wrote_bytes += char.len_utf8();
+        }
+
+        '\n'.encode_utf8(&mut buf[wrote_bytes..]);
+        wrote_bytes += endline_len;
+
+        self.update();
+
+        Ok(wrote_bytes)
     }
 }

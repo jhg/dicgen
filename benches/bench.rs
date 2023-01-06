@@ -15,6 +15,14 @@ pub fn criterion_benchmark(c: &mut Criterion) {
             black_box(item);
         }
     }));
+    c.bench_function("gen copy 00000 99999", |b| b.iter(|| {
+        let mut generator = DictionaryGenerator::new(alphabet, black_box("00000"), black_box("99999"));
+        std::io::copy(&mut generator, &mut std::io::sink()).unwrap();
+    }));
+    c.bench_function("gen copy 00000 000000", |b| b.iter(|| {
+        let mut generator = DictionaryGenerator::new(alphabet, black_box("00000"), black_box("000000"));
+        std::io::copy(&mut generator, &mut std::io::sink()).unwrap();
+    }));
 }
 
 criterion_group!(benches, criterion_benchmark);
