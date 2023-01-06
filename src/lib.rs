@@ -1,3 +1,5 @@
+#![deny(clippy::perf)]
+
 use std::collections::BTreeSet;
 
 pub struct DictionaryGenerator {
