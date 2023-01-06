@@ -1,6 +1,10 @@
 #![deny(clippy::perf)]
 
+mod error;
+
 use std::{collections::BTreeSet, io::Read};
+
+pub use error::DictionaryGeneratorError;
 
 pub struct DictionaryGenerator {
     alphabet: Vec<char>,
@@ -13,7 +17,7 @@ impl DictionaryGenerator {
     /// 
     /// ```
     /// # use dicgen::DictionaryGenerator;
-    /// let mut generator = DictionaryGenerator::new("abc", "b", "ab");
+    /// let mut generator = DictionaryGenerator::new("abc", "b", "ab").unwrap();
     /// 
     /// assert_eq!(generator.next(), Some("b".to_string()));
     /// assert_eq!(generator.next(), Some("c".to_string()));
@@ -21,7 +25,7 @@ impl DictionaryGenerator {
     /// assert_eq!(generator.next(), Some("ab".to_string()));
     /// assert_eq!(generator.next(), None);
     /// ```
-    pub fn new<A: AsRef<str>, I: AsRef<str>, E: AsRef<str>>(alphabet: A, init: I, end: E) -> Self {
+    pub fn new<A: AsRef<str>, I: AsRef<str>, E: AsRef<str>>(alphabet: A, init: I, end: E) -> Result<Self, DictionaryGeneratorError> {
         let mut alphabet: Vec<char> = BTreeSet::from_iter(alphabet.as_ref().chars()).into_iter().collect();
         let mut last_value: Vec<char> = end.as_ref().chars().rev().collect();
         let mut current_value: Vec<char> = init.as_ref().chars().rev().collect();
@@ -30,11 +34,11 @@ impl DictionaryGenerator {
         last_value.shrink_to_fit();
         current_value.reserve_exact(last_value.len() - current_value.len());
 
-        DictionaryGenerator {
+        Ok(DictionaryGenerator {
             alphabet,
             last_value,
             current_value: Some(current_value),
-        }
+        })
     }
 
     /// Use first `char` of alphabet as init for [`DictionaryGenerator::new`].
@@ -43,7 +47,7 @@ impl DictionaryGenerator {
     /// 
     /// ```
     /// # use dicgen::DictionaryGenerator;
-    /// let mut generator = DictionaryGenerator::new_from_start("abc", "ab");
+    /// let mut generator = DictionaryGenerator::new_from_start("abc", "ab").unwrap();
     /// 
     /// assert_eq!(generator.next(), Some("a".to_string()));
     /// assert_eq!(generator.next(), Some("b".to_string()));
@@ -52,10 +56,12 @@ impl DictionaryGenerator {
     /// assert_eq!(generator.next(), Some("ab".to_string()));
     /// assert_eq!(generator.next(), None);
     /// ```
-    pub fn new_from_start<A: AsRef<str>, E: AsRef<str>>(alphabet: A, end: E) -> Self {
-        let init = alphabet.as_ref().chars().next().unwrap().to_string();
+    pub fn new_from_start<A: AsRef<str>, E: AsRef<str>>(alphabet: A, end: E) -> Result<Self, DictionaryGeneratorError> {
+        let Some(init) = alphabet.as_ref().chars().next() else {
+            return Err(DictionaryGeneratorError::AlphabetEmpty);
+        };
 
-        DictionaryGenerator::new(alphabet, init, end)
+        DictionaryGenerator::new(alphabet, init.to_string(), end)
     }
 
     #[inline]

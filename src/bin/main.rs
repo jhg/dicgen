@@ -27,9 +27,9 @@ fn main() {
     buf.resize(opts.end.len() + 1, 0);
 
     let mut generator = if let Some(init) = opts.init {
-        DictionaryGenerator::new(opts.alphabet, init, opts.end)
+        DictionaryGenerator::new(opts.alphabet, init, opts.end).unwrap()
     } else {
-        DictionaryGenerator::new_from_start(opts.alphabet, opts.end)
+        DictionaryGenerator::new_from_start(opts.alphabet, opts.end).unwrap()
     };
 
     let mut output: BufWriter<Box<dyn Write>> = if let Some(Ok(file)) = opts.file.as_ref().map(std::fs::File::create) {
