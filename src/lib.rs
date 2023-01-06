@@ -115,10 +115,8 @@ impl Iterator for DictionaryGenerator {
 
         let min_possible_values = if self.current_value.is_none() {
             0
-        } else if self.is_last() {
-            1
         } else {
-            self.alphabet.len().pow(current_value_len as u32)
+            1
         };
 
         (min_possible_values, Some(max_possible_values))
