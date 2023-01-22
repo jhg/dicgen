@@ -12,6 +12,10 @@ struct Opts {
     init: Option<String>,
     #[clap(short, long)]
     end: String,
+    #[clap(long)]
+    prefix: Option<String>,
+    #[clap(long)]
+    suffix: Option<String>,
     /// If not present, write to stdout.
     #[clap(short, long)]
     file: Option<PathBuf>,
@@ -23,14 +27,20 @@ struct Opts {
 fn main() {
     let opts = Opts::parse();
 
-    let mut buf: Vec<u8> = Vec::with_capacity(opts.end.len() + 1);
-    buf.resize(opts.end.len() + 1, 0);
+    let prefix = opts.prefix.as_deref().unwrap_or("");
+    let suffix = opts.suffix.as_deref().unwrap_or("");
+
+    let mut buf: Vec<u8> = Vec::with_capacity(opts.end.len() + prefix.len() + suffix.len() + 1);
+    buf.resize(opts.end.len() + prefix.len() + suffix.len() + 1, 0);
 
     let mut generator = if let Some(init) = opts.init {
-        DictionaryGenerator::new(opts.alphabet, init, opts.end).unwrap()
+        DictionaryGenerator::new(opts.alphabet, init, opts.end)
     } else {
-        DictionaryGenerator::new_from_start(opts.alphabet, opts.end).unwrap()
-    };
+        DictionaryGenerator::new_from_start(opts.alphabet, opts.end)
+    }
+    .unwrap()
+    .with_prefix(&prefix)
+    .with_suffix(&suffix);
 
     let mut output: BufWriter<Box<dyn Write>> = if let Some(Ok(file)) = opts.file.as_ref().map(std::fs::File::create) {
         BufWriter::new(Box::new(file))

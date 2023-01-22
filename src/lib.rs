@@ -9,6 +9,8 @@ pub use error::DictionaryGeneratorError;
 pub struct DictionaryGenerator {
     alphabet: Vec<char>,
     last_value: Vec<char>,
+    prefix: Option<String>,
+    suffix: Option<String>,
     current_value: Option<Vec<char>>,
 }
 
@@ -37,6 +39,8 @@ impl DictionaryGenerator {
         Ok(DictionaryGenerator {
             alphabet,
             last_value,
+            prefix: None,
+            suffix: None,
             current_value: Some(current_value),
         })
     }
@@ -62,6 +66,26 @@ impl DictionaryGenerator {
         };
 
         DictionaryGenerator::new(alphabet, init.to_string(), end)
+    }
+
+    pub fn with_prefix(self, prefix: &str) -> Self {
+        if prefix.is_empty() {
+            return self;
+        }
+        Self {
+            prefix: Some(prefix.to_string()),
+            ..self
+        }
+    }
+
+    pub fn with_suffix(self, suffix: &str) -> Self {
+        if suffix.is_empty() {
+            return self;
+        }
+        Self {
+            suffix: Some(suffix.to_string()),
+            ..self
+        }
     }
 
     #[inline]
@@ -99,7 +123,17 @@ impl DictionaryGenerator {
 
     #[inline]
     fn current(&self) -> Option<String> {
-        self.current_value.as_ref().map(|value| value.iter().rev().collect())
+        let mut current = String::with_capacity(self.last_value.len());
+        if let Some(prefix) = &self.prefix {
+            current.push_str(prefix.as_str());
+        }
+        for &char in self.current_value.as_ref()?.iter().rev() {
+            current.push(char);
+        }
+        if let Some(suffix) = &self.suffix {
+            current.push_str(suffix.as_str());
+        }
+        Some(current)
     }
 }
 
@@ -143,9 +177,19 @@ impl Read for DictionaryGenerator {
         }
 
         let mut wrote_bytes = 0;
+        if let Some(prefix) = &self.prefix {
+            let prefix_len = prefix.as_bytes().len();
+            buf[..prefix_len].copy_from_slice(prefix.as_bytes());
+            wrote_bytes += prefix_len;
+        }
         for char in current_chars.iter().rev() {
             char.encode_utf8(&mut buf[wrote_bytes..]);
             wrote_bytes += char.len_utf8();
+        }
+        if let Some(suffix) = &self.suffix {
+            let suffix_len = suffix.as_bytes().len();
+            buf[wrote_bytes..wrote_bytes+suffix_len].copy_from_slice(suffix.as_bytes());
+            wrote_bytes += suffix.as_bytes().len();
         }
 
         '\n'.encode_utf8(&mut buf[wrote_bytes..]);
@@ -155,4 +199,9 @@ impl Read for DictionaryGenerator {
 
         Ok(wrote_bytes)
     }
+}
+
+#[cfg(test)]
+mod test {
+
 }
