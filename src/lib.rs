@@ -30,9 +30,7 @@ impl DictionaryGenerator {
     pub fn new<A: AsRef<str>, I: AsRef<str>, E: AsRef<str>>(alphabet: A, init: I, end: E) -> Result<Self, DictionaryGeneratorError> {
         let alphabet: Vec<char> = BTreeSet::from_iter(alphabet.as_ref().chars()).into_iter().collect();
         let last_value: Vec<char> = end.as_ref().chars().rev().collect();
-        let mut current_value: Vec<char> = init.as_ref().chars().rev().collect();
-
-        current_value.reserve_exact(last_value.len() - current_value.len());
+        let current_value: Vec<char> = init.as_ref().chars().rev().collect();
 
         Ok(DictionaryGenerator {
             alphabet,
