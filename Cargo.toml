@@ -1,7 +1,7 @@
 [package]
 name = "dicgen"
 description = "Generate a list with all combinations for given characters, like in brute force attacks"
-version = "0.3.0"
+version = "0.4.0"
 license = "Unlicense"
 categories = ["command-line-utilities"]
 keywords = ["dictionary", "brute-force", "cybersecurity", "security", "pentesting"]

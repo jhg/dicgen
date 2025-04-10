@@ -124,6 +124,14 @@ impl DictionaryGenerator {
     #[inline]
     fn current(&self) -> Option<String> {
         let mut current = String::with_capacity(self.last_value.len());
+        self.current_in(&mut current)?;
+        Some(current)
+    }
+
+    #[inline]
+    fn current_in(&self, current: &mut String) -> Option<()> {
+        current.clear();
+
         if let Some(prefix) = &self.prefix {
             current.push_str(prefix.as_str());
         }
@@ -133,7 +141,14 @@ impl DictionaryGenerator {
         if let Some(suffix) = &self.suffix {
             current.push_str(suffix.as_str());
         }
-        Some(current)
+
+        Some(())
+    }
+
+    pub fn next_in(&mut self, current: &mut String) -> Option<()> {
+        self.current_in(current)?;
+        self.update();
+        Some(())
     }
 }
 
