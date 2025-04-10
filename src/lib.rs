@@ -145,10 +145,18 @@ impl DictionaryGenerator {
         Some(())
     }
 
+    #[inline]
     pub fn next_in(&mut self, current: &mut String) -> Option<()> {
         self.current_in(current)?;
         self.update();
         Some(())
+    }
+
+    pub fn reset_starting_in(&mut self, init: &str) {
+        let mut current_value = self.current_value.take().unwrap();
+        current_value.clear();
+        current_value.extend(init.chars().rev());
+        self.current_value = Some(current_value);
     }
 }
 
