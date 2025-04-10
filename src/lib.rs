@@ -2,8 +2,7 @@
 
 mod error;
 
-use std::{collections::BTreeSet, io::Read};
-
+use std::io::Read;
 pub use error::DictionaryGeneratorError;
 
 pub struct DictionaryGenerator {
@@ -28,7 +27,7 @@ impl DictionaryGenerator {
     /// assert_eq!(generator.next(), None);
     /// ```
     pub fn new<A: AsRef<str>, I: AsRef<str>, E: AsRef<str>>(alphabet: A, init: I, end: E) -> Result<Self, DictionaryGeneratorError> {
-        let alphabet: Vec<char> = BTreeSet::from_iter(alphabet.as_ref().chars()).into_iter().collect();
+        let alphabet: Vec<char> = alphabet.as_ref().chars().collect();
         let last_value: Vec<char> = end.as_ref().chars().rev().collect();
         let current_value: Vec<char> = init.as_ref().chars().rev().collect();
 
