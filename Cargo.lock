@@ -234,7 +234,7 @@ dependencies = [
 
 [[package]]
 name = "dicgen"
-version = "0.4.4"
+version = "0.4.5"
 dependencies = [
  "clap 4.0.32",
  "criterion",
