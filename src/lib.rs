@@ -152,11 +152,16 @@ impl DictionaryGenerator {
         Some(())
     }
 
-    pub fn reset_starting_in(&mut self, init: &str) {
-        let mut current_value = self.current_value.take().unwrap();
-        current_value.clear();
-        current_value.extend(init.chars().rev());
-        self.current_value = Some(current_value);
+    #[inline]
+    pub fn reset_starting_in<I: AsRef<str>>(&mut self, init: I) {
+        if let Some(mut current_value) = self.current_value.take() {
+            current_value.clear();
+            current_value.extend(init.as_ref().chars().rev());
+            self.current_value = Some(current_value);
+            return;
+        }
+
+        self.current_value = Some(init.as_ref().chars().rev().collect());
     }
 }
 
