@@ -156,7 +156,6 @@ impl DictionaryGenerator {
     pub fn reset_starting_in<I: AsRef<str>>(&mut self, init: I) {
         if let Some(mut current_value) = self.current_value.take() {
             current_value.clear();
-            current_value.extend(init.as_ref().chars().rev());
             self.current_value = Some(current_value);
             return;
         }
