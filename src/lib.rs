@@ -92,9 +92,12 @@ impl DictionaryGenerator {
 
     #[inline]
     fn is_last(&self) -> bool {
-        self.current_value.as_ref()
-        .map(|current_value| current_value == &self.last_value)
-        .unwrap_or(false)
+        self.current_value
+            .as_ref()
+            .map(|current_value| {
+                current_value == &self.last_value
+            })
+            .unwrap_or(false)
     }
 
     #[inline]
@@ -105,6 +108,7 @@ impl DictionaryGenerator {
         let Some(current_value) = self.current_value.as_mut() else {
             return;
         };
+
         let mut current_offset = 0;
         loop {
             let offset_value = current_value[current_offset];
@@ -112,6 +116,7 @@ impl DictionaryGenerator {
                 current_value[current_offset] = *next_value;
                 break;
             }
+
             // Carriage.
             let first_letter = self.alphabet[0];
             current_value[current_offset] = first_letter;
