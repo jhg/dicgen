@@ -26,10 +26,17 @@ impl DictionaryGenerator {
     /// assert_eq!(generator.next(), Some("ab".to_string()));
     /// assert_eq!(generator.next(), None);
     /// ```
-    pub fn new<A: AsRef<str>, I: AsRef<str>, E: AsRef<str>>(alphabet: A, init: I, end: E) -> Result<Self, DictionaryGeneratorError> {
-        let alphabet: Vec<char> = alphabet.as_ref().chars().collect();
+    pub fn new<A: AsRef<str>, I: AsRef<str>, E: AsRef<str>>(alphabet_source: A, init: I, end: E) -> Result<Self, DictionaryGeneratorError> {
+        let mut alphabet: Vec<char> = Vec::with_capacity(alphabet_source.as_ref().chars().count());
         let last_value: Vec<char> = end.as_ref().chars().rev().collect();
         let current_value: Vec<char> = init.as_ref().chars().rev().collect();
+
+        for c in alphabet_source.as_ref().chars() {
+            if !alphabet.contains(&c) {
+                alphabet.push(c);
+            }
+        }
+        alphabet.sort();
 
         Ok(DictionaryGenerator {
             alphabet,
